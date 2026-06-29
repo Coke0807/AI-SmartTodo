@@ -1,0 +1,512 @@
+/* SmartTodo — Notion × Linear Minimal Design System
+   Default: Light mode. Toggle via [data-theme="dark"] on <html>. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ───────────────────────────────────────────────
+   1. CSS Custom Properties — Light (default)
+   ─────────────────────────────────────────────── */
+:root,
+[data-theme="light"] {
+  /* Backgrounds */
+  --bg-base: #F7F8FC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-hover: #F3F4F8;
+  --bg-panel: #FFFFFF;
+  --bg-input: #FAFBFE;
+
+  /* Primary */
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-active: #1E40AF;
+  --primary-light: #DBEAFE;
+  --primary-gradient: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+
+  /* Accent — icy blue */
+  --accent: #E0F2FE;
+  --accent-hover: #BAE6FD;
+
+  /* Secondary */
+  --secondary: #0EA5E9;
+  --secondary-hover: #0284C7;
+  --secondary-light: #E0F2FE;
+
+  /* Semantic */
+  --success: #16A34A;
+  --success-light: #DCFCE7;
+  --warning: #D97706;
+  --warning-light: #FEF3C7;
+  --error: #DC2626;
+  --error-light: #FEE2E2;
+
+  /* Text */
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --text-inverse: #FFFFFF;
+
+  /* Border */
+  --border-color: #F0F0F0;
+  --border-hover: #E5E7EB;
+  --border-focus: #2563EB;
+
+  /* Effects — flat, no heavy shadows */
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Sidebar */
+  --sider-bg: #FFFFFF;
+  --sider-border: #F0F0F0;
+  --menu-item-hover: #F3F4F8;
+  --menu-item-active: #EFF6FF;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Scrollbar */
+  --scrollbar-track: #F7F8FC;
+  --scrollbar-thumb: #D1D5DB;
+  --scrollbar-thumb-hover: #9CA3AF;
+}
+
+/* ───────────────────────────────────────────────
+   2. CSS Custom Properties — Dark Theme
+   ─────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-base: #0F1117;
+  --bg-surface: #1A1D27;
+  --bg-surface-hover: #242836;
+  --bg-panel: #1E2130;
+  --bg-input: #1A1D27;
+
+  --primary: #60A5FA;
+  --primary-hover: #3B82F6;
+  --primary-active: #2563EB;
+  --primary-light: rgba(96, 165, 250, 0.12);
+  --primary-gradient: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+
+  --accent: #1E3A5F;
+  --accent-hover: #2563EB;
+
+  --secondary: #38BDF8;
+  --secondary-hover: #0EA5E9;
+  --secondary-light: rgba(56, 189, 248, 0.12);
+
+  --success: #4ADE80;
+  --success-light: rgba(74, 222, 128, 0.12);
+  --warning: #FBBF24;
+  --warning-light: rgba(251, 191, 36, 0.12);
+  --error: #F87171;
+  --error-light: rgba(248, 113, 113, 0.12);
+
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-inverse: #0F1117;
+
+  --border-color: #2A2F3E;
+  --border-hover: #3B4252;
+  --border-focus: #60A5FA;
+
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  --sider-bg: #1A1D27;
+  --sider-border: #2A2F3E;
+  --menu-item-hover: #242836;
+  --menu-item-active: rgba(96, 165, 250, 0.1);
+
+  --scrollbar-track: #0F1117;
+  --scrollbar-thumb: #3B4252;
+  --scrollbar-thumb-hover: #64748B;
+}
+
+/* ───────────────────────────────────────────────
+   3. Global Reset & Base
+   ─────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.65;
+  font-size: 15px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ───────────────────────────────────────────────
+   4. Custom Scrollbar
+   ─────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* ───────────────────────────────────────────────
+   5. Utility Classes
+   ─────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition-smooth);
+}
+
+.glass-panel:hover {
+  box-shadow: var(--card-shadow-hover);
+  border-color: var(--border-hover);
+}
+
+.text-gradient-primary {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Theme toggle button */
+.theme-switch {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  transition: var(--transition-smooth);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border-color);
+}
+.theme-switch:hover {
+  background: var(--menu-item-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ───────────────────────────────────────────────
+   6. Ant Design Component Overrides
+   ─────────────────────────────────────────────── */
+
+/* Layout */
+.ant-layout {
+  background: transparent !important;
+}
+.ant-layout-sider {
+  background: var(--sider-bg) !important;
+  border-right: 1px solid var(--sider-border) !important;
+  transition: var(--transition-smooth) !important;
+}
+.ant-layout-sider-trigger {
+  background: var(--bg-surface-hover) !important;
+  color: var(--text-secondary) !important;
+  border-top: 1px solid var(--sider-border) !important;
+}
+
+/* Menu */
+.ant-menu {
+  background: transparent !important;
+  border: none !important;
+}
+.ant-menu-item {
+  color: var(--text-secondary) !important;
+  border-radius: 8px !important;
+  margin: 2px 8px !important;
+  width: calc(100% - 16px) !important;
+  transition: var(--transition-smooth) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+.ant-menu-item-selected {
+  background: var(--menu-item-active) !important;
+  color: var(--primary) !important;
+}
+.ant-menu-item:hover:not(.ant-menu-item-selected) {
+  color: var(--text-primary) !important;
+  background: var(--menu-item-hover) !important;
+}
+
+/* Card */
+.ant-card {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  color: var(--text-primary) !important;
+  transition: var(--transition-smooth) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+.ant-card:hover {
+  box-shadow: var(--card-shadow-hover) !important;
+}
+.ant-card .ant-card-head {
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+.ant-card .ant-card-head-title {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+.ant-card-meta-title {
+  color: var(--text-primary) !important;
+}
+.ant-card-meta-description {
+  color: var(--text-secondary) !important;
+}
+
+/* Buttons */
+.ant-btn-primary {
+  background: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  transition: var(--transition-smooth) !important;
+}
+.ant-btn-primary:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  box-shadow: none !important;
+}
+.ant-btn-default {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+}
+.ant-btn-default:hover {
+  background: var(--bg-surface-hover) !important;
+  border-color: var(--border-hover) !important;
+  color: var(--primary) !important;
+}
+.ant-btn-text {
+  color: var(--text-secondary) !important;
+}
+.ant-btn-text:hover {
+  color: var(--primary) !important;
+  background: var(--menu-item-hover) !important;
+}
+
+/* Input */
+.ant-input,
+.ant-input-password,
+.ant-select-selector,
+.ant-input-affix-wrapper {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+  transition: var(--transition-smooth) !important;
+}
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+}
+.ant-input::placeholder {
+  color: var(--text-muted) !important;
+}
+.ant-input-prefix {
+  color: var(--text-muted) !important;
+}
+
+/* Select Dropdown */
+.ant-select-dropdown {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--card-shadow-hover) !important;
+  border-radius: 8px !important;
+}
+.ant-select-item {
+  color: var(--text-primary) !important;
+}
+.ant-select-item-option-active {
+  background: var(--menu-item-hover) !important;
+}
+.ant-select-item-option-selected {
+  background: var(--menu-item-active) !important;
+  color: var(--primary) !important;
+}
+
+/* Tabs */
+.ant-tabs-tab {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+}
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--primary) !important;
+}
+.ant-tabs-ink-bar {
+  background: var(--primary) !important;
+}
+
+/* Tag */
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  border: none !important;
+  padding: 2px 8px !important;
+}
+
+/* Checkbox */
+.ant-checkbox-wrapper {
+  color: var(--text-secondary) !important;
+}
+.ant-checkbox-inner {
+  background: var(--bg-input) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Progress */
+.ant-progress-bg {
+  border-radius: 4px !important;
+}
+
+/* Divider */
+.ant-divider {
+  border-color: var(--border-color) !important;
+}
+
+/* Radio */
+.ant-radio-wrapper {
+  color: var(--text-primary) !important;
+}
+
+/* Message */
+.ant-message-notice-content {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--card-shadow-hover) !important;
+  border-radius: 8px !important;
+  color: var(--text-primary) !important;
+}
+
+/* Modal */
+.ant-modal-content {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+}
+.ant-modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+.ant-modal-title {
+  color: var(--text-primary) !important;
+}
+.ant-modal-close {
+  color: var(--text-muted) !important;
+}
+.ant-modal-close:hover {
+  color: var(--text-primary) !important;
+}
+.ant-modal-footer {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+/* Radio option card (model config) */
+.glass-radio {
+  display: block;
+  padding: 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 100%;
+  transition: var(--transition-smooth);
+}
+.glass-radio:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-surface-hover);
+}
+
+/* Upload */
+.ant-upload-drag {
+  background: var(--bg-input) !important;
+  border: 1px dashed var(--border-color) !important;
+  border-radius: 8px !important;
+}
+.ant-upload-drag:hover {
+  border-color: var(--primary) !important;
+}
+
+/* Form labels */
+.ant-form-item-label > label {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  font-size: 13px !important;
+}
+
+/* ───────────────────────────────────────────────
+   7. Keyframe Animations — minimal
+   ─────────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinning-ai-icon {
+  animation: spin 2s linear infinite;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ───────────────────────────────────────────────
+   8. Responsive
+   ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+

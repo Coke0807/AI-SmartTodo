@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "github.com/Coke0807/AI-SmartTodo/backend/pkg/pb";
+
+service AIService {
+    // 基础连通性测试
+    rpc Ping(PingRequest) returns (PingResponse);
+    
+    // 智能任务拆解与评估
+    rpc SplitTask(SplitTaskRequest) returns (SplitTaskResponse);
+    
+    // 全局 AI 助手对话 (云端大模型)
+    rpc Chat(ChatRequest) returns (ChatResponse);
+    
+    // RAG 知识库问答 (本地轻量模型)
+    rpc RAGQuery(RAGQueryRequest) returns (RAGQueryResponse);
+}
+
+message AIConfig {
+    string mode = 1;             // "local", "cloud", "hybrid"
+    string local_endpoint = 2;   // Ollama endpoint
+    string cloud_endpoint = 3;   // Cloud API endpoint
+    string api_key = 4;
+    string model_local = 5;
+    string model_cloud = 6;
+}
+
+message PingRequest {
+    string value = 1;
+}
+
+message PingResponse {
+    string value = 1;
+}
+
+message SplitTaskRequest {
+    string title = 1;
+    string description = 2;
+    AIConfig config = 3;
+}
+
+message SubTask {
+    string title = 1;
+    bool completed = 2;
+}
+
+message SplitTaskResponse {
+    string title = 1;
+    string description = 2;
+    string priority = 3;
+    string estimated_time = 4;
+    repeated SubTask sub_tasks = 5;
+}
+
+message ChatMessage {
+    string role = 1; // "user" or "assistant"
+    string content = 2;
+}
+
+message ChatRequest {
+    string message = 1;
+    repeated ChatMessage history = 2;
+    AIConfig config = 3;
+}
+
+message ChatResponse {
+    string response = 1;
+}
+
+message RAGQueryRequest {
+    string query = 1;
+    string doc_content = 2;
+    AIConfig config = 3;
+}
+
+message RAGQueryResponse {
+    string answer = 2;
+}

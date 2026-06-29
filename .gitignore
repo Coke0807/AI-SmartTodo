@@ -1,0 +1,54 @@
+# === Environment & Secrets ===
+.env
+.env.local
+.env.*.local
+
+# === Node.js (Frontend) ===
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === Go (Backend) ===
+backend/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# === Python (AI Service) ===
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+dist/
+
+# === Uploads (user documents for RAG) ===
+uploads/
+
+# === IDE & Editor ===
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.sw?
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+项目结课报告_new.docx
+项目结课报告.docx
+06.docx
+# === Docker ===
+# (postgres_data is a named volume, managed by Docker)
