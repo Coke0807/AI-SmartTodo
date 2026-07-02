@@ -11,7 +11,7 @@
 - **快速开始指南**:
   1. 启动数据库: `docker compose up -d postgres`
   2. 后端: 复制 `backend/.env.example` 为 `backend/.env.local`，修改密码后在 `backend/` 下运行 `go run ./cmd/server/`
-  3. AI 服务: 在 `ai_service/` 下运行 `uv sync && python main.py`
+  3. AI 服务: 在 `ai_service/` 下运行 `uv sync && uv run python main.py`
   4. 前端: 在 `frontend/` 下运行 `pnpm install && pnpm dev`
   5. 访问 `http://localhost:5173`
 
@@ -95,7 +95,7 @@
   go run ./cmd/server/                       # 启动 HTTP :8080
 
   # AI 服务 (Python)
-  cd ai_service && uv sync && python main.py  # gRPC :50051 + FastAPI :8000
+  cd ai_service && uv sync && uv run python main.py  # gRPC :50051 + FastAPI :8000
 
   # 前端 (React)
   cd frontend && pnpm install && pnpm dev     # Vite :5173

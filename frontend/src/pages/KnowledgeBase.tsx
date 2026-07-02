@@ -1,7 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Input, Button, Upload, App, Tooltip } from 'antd';
-import { UploadCloud, FileText, Trash2, Send, Sparkles, BookOpen, HelpCircle } from 'lucide-react';
+import { UploadCloud, FileText, Trash2, Send, Sparkles, BookOpen, HelpCircle, Cpu, Cloud, GitMerge } from 'lucide-react';
 import { aiApi } from '../services/ai';
+import type { AiConfig, AiMode } from '../types/config';
+
+function getStoredAiConfig(): AiConfig | null {
+  try {
+    const raw = localStorage.getItem('smarttodo_ai_config');
+    return raw ? (JSON.parse(raw) as AiConfig) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getModeLabel(mode: AiMode | string) {
+  switch (mode) {
+    case 'local':
+      return { text: '本地 Ollama 推理', icon: <Cpu size={10} /> };
+    case 'cloud':
+      return { text: '云端 API 推理', icon: <Cloud size={10} /> };
+    case 'hybrid':
+    default:
+      return { text: '混合推理 (Hybrid)', icon: <GitMerge size={10} /> };
+  }
+}
 
 export const KnowledgeBase: React.FC = () => {
   const { message } = App.useApp();
@@ -11,13 +33,9 @@ export const KnowledgeBase: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [querying, setQuerying] = useState(false);
   const [loadingFiles, setLoadingFiles] = useState(true);
+  const [aiMode, setAiMode] = useState<AiMode>(() => getStoredAiConfig()?.mode ?? 'hybrid');
 
-  // Load uploaded files list on mount
-  useEffect(() => {
-    loadFiles();
-  }, []);
-
-  const loadFiles = () => {
+  const loadFiles = React.useCallback(() => {
     setLoadingFiles(true);
     aiApi.getFiles()
       .then(setFiles)
@@ -27,7 +45,16 @@ export const KnowledgeBase: React.FC = () => {
       .finally(() => {
         setLoadingFiles(false);
       });
-  };
+  }, [message]);
+
+  // Load uploaded files list on mount and sync AI mode from storage
+  useEffect(() => {
+    loadFiles();
+    const syncMode = () => setAiMode(getStoredAiConfig()?.mode ?? 'hybrid');
+    syncMode();
+    window.addEventListener('storage', syncMode);
+    return () => window.removeEventListener('storage', syncMode);
+  }, [loadFiles]);
 
   const handleUpload = (file: File) => {
     const isTextOrMd = file.name.endsWith('.txt') || file.name.endsWith('.md') || file.name.endsWith('.markdown');
@@ -69,6 +96,8 @@ export const KnowledgeBase: React.FC = () => {
       return;
     }
 
+    // Sync mode right before each query in case the user changed config in another tab/window.
+    setAiMode(getStoredAiConfig()?.mode ?? 'hybrid');
     setQuerying(true);
     setAnswer('');
     aiApi.ragQuery(query)
@@ -91,7 +120,7 @@ export const KnowledgeBase: React.FC = () => {
           RAG 智能知识库 <span style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '14px', marginLeft: '4px' }}>SmartTodo RAG</span>
         </h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.6' }}>
-          上传您的学习笔记、工作文档（支持 TXT 和 Markdown 格式），由本地轻量级大模型（Ollama）基于您的笔记内容进行智能检索与精准问答。
+          上传您的学习笔记、工作文档（支持 TXT 和 Markdown 格式），由您配置的 AI 推理引擎基于笔记内容进行智能检索与精准问答。
         </p>
       </div>
 
@@ -246,7 +275,7 @@ export const KnowledgeBase: React.FC = () => {
                 position: 'relative',
               }}
             >
-              {/* Local model badge */}
+              {/* Active inference mode badge */}
               <div
                 style={{
                   position: 'absolute',
@@ -263,8 +292,8 @@ export const KnowledgeBase: React.FC = () => {
                   gap: '4px',
                 }}
               >
-                <Sparkles size={10} />
-                本地 Ollama 推理
+                {getModeLabel(aiMode).icon}
+                {getModeLabel(aiMode).text}
               </div>
 
               <div style={{ color: 'var(--text-secondary)', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
@@ -275,7 +304,7 @@ export const KnowledgeBase: React.FC = () => {
               {querying ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '12px', color: 'var(--text-muted)' }}>
                   <Sparkles size={24} className="spinning-ai-icon" style={{ color: 'var(--secondary)' }} />
-                  <span>本地模型正在深度分析笔记内容并整理回答...</span>
+                  <span>AI 正在深度分析笔记内容并整理回答...</span>
                 </div>
               ) : answer ? (
                 <div

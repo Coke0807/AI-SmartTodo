@@ -1,4 +1,7 @@
+import argparse
+import asyncio
 import json
+import traceback
 import grpc
 from concurrent import futures
 from contextlib import asynccontextmanager
@@ -16,12 +19,28 @@ from llm_client import execute_llm, execute_llm_stream
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Startup: Start gRPC server
+    print("Starting gRPC server on port 50051...")
+    grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    todo_ai_pb2_grpc.add_AIServiceServicer_to_server(AIService(), grpc_server)
+    grpc_server.add_insecure_port('0.0.0.0:50051')
+    grpc_server.start()
+    app.state.grpc_server = grpc_server
+    print("gRPC server started successfully.")
+    
     yield
+    
+    # Shutdown: Stop gRPC server gracefully
     print("Stopping gRPC server...")
     if hasattr(app.state, "grpc_server"):
-        app.state.grpc_server.stop(0)
+        app.state.grpc_server.stop(grace=5)  # 5秒优雅关闭时间
+        print("gRPC server stopped.")
 
 app = FastAPI(title="SmartTodo AI Gateway", lifespan=lifespan)
+
+# Why: gRPC uses ThreadPoolExecutor (sync threads), but llm_client is now async.
+# We need asyncio.run() to bridge sync gRPC methods to async llm_client calls.
+# Each gRPC thread gets its own event loop to avoid blocking the main async loop.
 
 class AIService(todo_ai_pb2_grpc.AIServiceServicer):
     def Ping(self, request, context):
@@ -31,7 +50,7 @@ class AIService(todo_ai_pb2_grpc.AIServiceServicer):
     def SplitTask(self, request, context):
         print(f"[gRPC] SplitTask received for title: '{request.title}'")
         try:
-            result = split_task(request.title, request.description, request.config)
+            result = asyncio.run(split_task(request.title, request.description, request.config))
             
             # Map subtasks to proto messages
             sub_tasks = [
@@ -73,12 +92,12 @@ class AIService(todo_ai_pb2_grpc.AIServiceServicer):
                 user_prompt = request.message
                 
             # Default chatbot to cloud model (with hybrid auto-failover to local Ollama)
-            response_text = execute_llm(
+            response_text = asyncio.run(execute_llm(
                 config=request.config,
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 max_tokens=1000
-            )
+            ))
             
             return todo_ai_pb2.ChatResponse(response=response_text)
         except Exception as e:
@@ -89,22 +108,20 @@ class AIService(todo_ai_pb2_grpc.AIServiceServicer):
 
     def RAGQuery(self, request, context):
         print(f"[gRPC] RAGQuery received: '{request.query}'")
+        cfg = request.config
+        if cfg and cfg.mode:
+            print(f"[gRPC] RAGQuery config: mode={cfg.mode}, local_model={cfg.model_local}, cloud_model={cfg.model_cloud}")
+        else:
+            print("[gRPC] RAGQuery config: empty, will use default hybrid settings")
         try:
-            answer = query_rag(request.query, request.doc_content, request.config)
+            answer = asyncio.run(query_rag(request.query, request.doc_content, request.config))
             return todo_ai_pb2.RAGQueryResponse(answer=answer)
         except Exception as e:
             print(f"[gRPC] Error in RAGQuery: {e}")
+            traceback.print_exc()
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(str(e))
             return todo_ai_pb2.RAGQueryResponse()
-
-def serve_grpc():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    todo_ai_pb2_grpc.add_AIServiceServicer_to_server(AIService(), server)
-    server.add_insecure_port('0.0.0.0:50051')
-    print("Starting gRPC server on port 50051...")
-    server.start()
-    return server
 
 @app.get("/health")
 def health():
@@ -177,13 +194,19 @@ async def chat_stream(req: StreamChatRequest):
 
 
 def main():
-    # Start gRPC server in a background daemon thread
-    grpc_server = serve_grpc()
-    app.state.grpc_server = grpc_server
-
     # Start FastAPI web server (blocking)
+    # gRPC server will be started automatically via the lifespan context manager
+    parser = argparse.ArgumentParser(description="SmartTodo AI Service")
+    parser.add_argument("--reload", action="store_true", help="Enable auto-reload for development")
+    args = parser.parse_args()
+    
     print("Starting FastAPI server on port 8000...")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=8000,
+        reload=args.reload
+    )
 
 if __name__ == "__main__":
     main()

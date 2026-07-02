@@ -143,6 +143,10 @@ func ChatStream(c *gin.Context) {
 		fmt.Fprintf(c.Writer, "%s\n", line)
 		flusher.Flush()
 	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("[ChatStream] scanner error: %v\n", err)
+	}
 }
 
 // UploadFile uploads a text/markdown file for RAG.
@@ -209,6 +213,7 @@ func RAGQuery(c *gin.Context) {
 	// Read all files in the user's upload directory
 	uploadDir := filepath.Join("uploads", "user_"+strconv.FormatUint(uint64(userID), 10))
 	var combinedContent string
+	var fileCount int
 
 	// Check if directory exists
 	if _, err := os.Stat(uploadDir); err == nil {
@@ -220,11 +225,18 @@ func RAGQuery(c *gin.Context) {
 					content, err := os.ReadFile(filePath)
 					if err == nil {
 						combinedContent += "\n--- File: " + f.Name() + " ---\n" + string(content) + "\n"
+						fileCount++
 					}
 				}
 			}
 		}
 	}
+
+	mode := "hybrid"
+	if req.Config != nil && req.Config.Mode != "" {
+		mode = req.Config.Mode
+	}
+	fmt.Printf("[RAG] user=%d files=%d mode=%s query=%q\n", userID, fileCount, mode, req.Query)
 
 	var protoConfig *pb.AIConfig
 	if req.Config != nil {
@@ -238,7 +250,10 @@ func RAGQuery(c *gin.Context) {
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	// Why: RAG queries involve document processing and LLM inference,
+	// which can be slow especially with large documents or cold models.
+	// Set a generous timeout to accommodate these operations.
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 	defer cancel()
 
 	resp, err := service.AIClient.RAGQuery(ctx, &pb.RAGQueryRequest{
@@ -247,6 +262,7 @@ func RAGQuery(c *gin.Context) {
 		Config:     protoConfig,
 	})
 	if err != nil {
+		fmt.Printf("[RAG] user=%d RAGQuery failed: %v\n", userID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to call RAG service: " + err.Error()})
 		return
 	}

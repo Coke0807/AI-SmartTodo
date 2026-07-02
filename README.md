@@ -122,10 +122,17 @@ docker-compose up -d db
    JWT_SECRET=your_local_secret_key
    AI_SERVICE_GRPC_ADDR=127.0.0.1:50051
    ```
-2. 运行服务：
+2. 运行服务（推荐使用 Air 热重载）：
+   ```bash
+   air
+   ```
+   
+   或者使用传统方式：
    ```bash
    go run cmd/server/main.go
    ```
+   
+   > **提示**：使用 Air 工具可以实现 Go 源文件改动后的自动编译和服务重启，显著提升开发效率。详细配置请参考 `docs/air热重载配置指南.md`。
 
 ### 4.4 前端服务启动 (React)
 1. 进入 `frontend` 目录，安装依赖：

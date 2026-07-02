@@ -14,7 +14,7 @@ class SplitTaskSchema(BaseModel):
     estimated_time: str = Field(description="Predicted time required to complete the task, e.g., '3 hours', '1 day'")
     sub_tasks: List[SubTaskSchema] = Field(description="A list of 3-5 subtasks that split the main task")
 
-def split_task(title: str, description: str, config) -> dict:
+async def split_task(title: str, description: str, config) -> dict:
     system_prompt = """You are an expert AI Project Manager. Your job is to take a user's task title and description, analyze it, and return a structured JSON response to break down the task.
 
 You MUST follow these requirements:
@@ -42,7 +42,7 @@ Ensure the output is 100% valid JSON, containing no markdown formatting (like ``
     
     try:
         # Call LLM with JSON Mode
-        raw_response = execute_llm(
+        raw_response = await execute_llm(
             config=config,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
